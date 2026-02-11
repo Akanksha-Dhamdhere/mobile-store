@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { devError } from '../utils/logger';
 
 const ContactDetails = () => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -24,7 +25,7 @@ const ContactDetails = () => {
         setStoredData(data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching feedback:', err);
+      devError('Error fetching feedback:', err);
     } finally {
       setLoading(false);
     }

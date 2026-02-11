@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { devError } from '../utils/logger';
 import './Bill.css';
 
 const Bill = ({ orderId }) => {
@@ -49,7 +50,7 @@ const Bill = ({ orderId }) => {
         }
       } catch (err) {
         setError(err?.response?.data?.message || 'Error fetching bill');
-        console.error('Error fetching bill:', err);
+        devError('Error fetching bill:', err);
       } finally {
         setLoading(false);
       }
@@ -75,7 +76,7 @@ const Bill = ({ orderId }) => {
         window.print();
       }
     } catch (err) {
-      console.error('Error downloading PDF:', err);
+      devError('Error downloading PDF:', err);
     }
   };
 

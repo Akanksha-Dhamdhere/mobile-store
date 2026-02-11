@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { devError } from './logger';
 
 const API_BASE = `${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'}/api`;
 
@@ -119,7 +120,7 @@ export const updateUserProfile = async (userId, profileData) => {
     const res = await axios.put(`${API_BASE}/users/${userId}`, profileData, { withCredentials: true });
     return res.data;
   } catch (error) {
-    console.error('updateUserProfile error:', {
+      devError('updateUserProfile error:', {
       status: error.response?.status,
       message: error.response?.data?.message,
       error: error.message,

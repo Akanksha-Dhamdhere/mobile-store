@@ -60,6 +60,18 @@ router.get('/', adminAuth, billController.getAllBills);
 // Get bills statistics (admin only) - MUST come before /:id
 router.get('/stats/all', adminAuth, billController.getBillsStatistics);
 
+// Get daily bills with filters (admin only)
+router.get('/filter/daily', adminAuth, billController.getDailyBills);
+
+// Get weekly bills with filters (admin only)
+router.get('/filter/weekly', adminAuth, billController.getWeeklyBills);
+
+// Get monthly bills with filters (admin only)
+router.get('/filter/monthly', adminAuth, billController.getMonthlyBills);
+
+// Get filtered bills (admin only)
+router.get('/filter/advanced', adminAuth, billController.getBillsFiltered);
+
 // Update bill status
 router.patch('/:id/status', adminAuth, billController.updateBillStatus);
 

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { devError } from '../utils/logger';
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchCart, updateCart, fetchWishlist, updateWishlist } from '../utils/api';
@@ -12,7 +13,7 @@ function AccessoriesDetailsPage() {
   const getImageSrc = (imgPath) => {
     if (!imgPath) return '';
     if (imgPath.startsWith('http')) return imgPath;
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
     return `${backendUrl}${imgPath}`;
   };
   const { id } = useParams();
@@ -47,32 +48,35 @@ function AccessoriesDetailsPage() {
   useEffect(() => {
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
     const API_BASE = `${backendUrl}/api`;
+    let isMounted = true;
+
     async function fetchAll() {
-      let fetchedModel;
+      let fetchedData = null;
       try {
         const res = await fetch(`${API_BASE}/accessories/${id}`);
         const response = await res.json();
         
         // Check if response is successful
         if (!response || response.success === false) {
-          console.error("Failed to fetch accessory:", response?.message || "Unknown error");
-          setAccessory(null);
+          devError("Failed to fetch accessory:", response?.message || "Unknown error");
+          if (isMounted) setAccessory(null);
           return;
         }
         
         // Handle both response formats: { data: {...} } and direct {...}
-        const data = response.data || response;
+        fetchedData = response.data || response;
         
-        if (!data) {
-          console.error("No data in response");
-          setAccessory(null);
+        if (!fetchedData) {
+          devError("No data in response");
+          if (isMounted) setAccessory(null);
           return;
         }
         
-        setAccessory(data);
-        setMainImage(data?.images && Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : (data?.image || ''));
-        setAvgRating(data.avgRating || null);
-        setReviews(data.reviews || []);
+        if (!isMounted) return;
+        setAccessory(fetchedData);
+        setMainImage(fetchedData?.images && Array.isArray(fetchedData.images) && fetchedData.images.length > 0 ? fetchedData.images[0] : (fetchedData?.image || ''));
+        setAvgRating(fetchedData.avgRating || null);
+        setReviews(fetchedData.reviews || []);
         
         // Fetch related products and accessories from backend (same category or brand, exclude self)
         const api = await import('../utils/api');
@@ -84,54 +88,75 @@ function AccessoriesDetailsPage() {
           
           const productsArr = Array.isArray(allProducts) ? allProducts : [];
           const accessoriesArr = Array.isArray(allAccessories) ? allAccessories : [];
+          // model is determined dynamically when needed
           
           const relatedProducts = productsArr.filter(
             (p) =>
               (p._id !== id && p.id !== id) &&
-              (p.category === data.category || p.brand === data.brand)
+              (p.category === fetchedData.category || p.brand === fetchedData.brand)
           );
           let relatedAccessories = accessoriesArr.filter(
             (a) =>
               (a._id !== id && a.id !== id) &&
-              (a.category === data.category || a.brand === data.brand)
+              (a.category === fetchedData.category || a.brand === fetchedData.brand)
           );
           relatedAccessories = relatedAccessories.map(a => ({ ...a, model: 'Accessory' }));
-          setRelated([...relatedProducts, ...relatedAccessories].slice(0, 4));
+          if (isMounted) setRelated([...relatedProducts, ...relatedAccessories].slice(0, 4));
         } catch (relatedErr) {
-          console.error("Error fetching related products:", relatedErr);
-          setRelated([]);
+          devError("Error fetching related products:", relatedErr);
+          if (isMounted) setRelated([]);
         }
-        fetchedModel = getModel(data);
       } catch (err) {
-        console.error("Error fetching accessory details:", err);
-        setAccessory(null);
+        devError("Error fetching accessory details:", err);
+        if (isMounted) setAccessory(null);
       }
+      
       // Cart & Wishlist from backend
       if (user && user._id) {
         try {
           const cartData = await fetchCart(user._id);
+          if (!isMounted) return;
           setCart((cartData && cartData.data) || []);
           setIsInCart(((cartData && cartData.data) || []).some((c) => {
             const cid = c.product?._id || c.product?.id || c._id || c.id;
             const cmodel = c.model || (c.category ? 'Accessory' : 'Product');
-            return cid === id && cmodel === fetchedModel;
+            return cid === id && cmodel === getModel(fetchedData);
           }));
-        } catch { setCart([]); setIsInCart(false); }
+        } catch { 
+          if (isMounted) {
+            setCart([]);
+            setIsInCart(false);
+          }
+        }
         try {
           const wishlistData = await fetchWishlist(user._id);
+          if (!isMounted) return;
           setWishlist((wishlistData && wishlistData.data) || []);
           setIsInWishlist(((wishlistData && wishlistData.data) || []).some((w) => {
             const wid = w._id || w.id;
             const wmodel = w.model || (w.category ? 'Accessory' : 'Product');
-            return wid === id && wmodel === fetchedModel;
+            return wid === id && wmodel === getModel(fetchedData);
           }));
-        } catch { setWishlist([]); setIsInWishlist(false); }
+        } catch { 
+          if (isMounted) {
+            setWishlist([]);
+            setIsInWishlist(false);
+          }
+        }
       } else {
-        setCart([]); setIsInCart(false);
-        setWishlist([]); setIsInWishlist(false);
+        if (isMounted) {
+          setCart([]);
+          setIsInCart(false);
+          setWishlist([]);
+          setIsInWishlist(false);
+        }
       }
     }
+    
     fetchAll();
+    return () => {
+      isMounted = false;
+    };
   }, [id, user]);
 
   // Add review (rating + text)
@@ -207,7 +232,7 @@ function AccessoriesDetailsPage() {
       }
       window.dispatchEvent(new Event('reviewSubmitted'));
     } catch (err) {
-      console.error("Error submitting review:", err);
+      devError("Error submitting review:", err);
       alert("Error submitting review: " + (err.message || "Unknown error"));
     }
   };

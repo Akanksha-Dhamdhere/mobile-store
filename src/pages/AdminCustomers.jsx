@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { devError } from '../utils/logger';
 
 export default function AdminCustomers() {
   const [users, setUsers] = useState([]);
@@ -18,7 +19,7 @@ export default function AdminCustomers() {
         setUsers([]);
         setOrders([]);
         // Debug: show error in UI
-        console.error("Error fetching data:", err);
+        devError("Error fetching data:", err);
         window.alert("Error fetching users or orders: " + (err.response?.data?.message || err.message));
       }
     }

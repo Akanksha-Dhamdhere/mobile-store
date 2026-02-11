@@ -4,6 +4,13 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Polyfill TextEncoder/TextDecoder for Jest (Node environment)
+if (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
 // Provide a default mock for AuthContext used throughout the app tests
 jest.mock('./context/AuthContext', () => ({
   useAuth: () => ({ user: null, logout: jest.fn(), login: jest.fn(), isAdmin: false })

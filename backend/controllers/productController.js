@@ -1,5 +1,14 @@
 const Product = require('../models/Product');
 
+const parseBool = (v) => {
+  if (v === true || v === false) return v;
+  if (typeof v === 'string') {
+    const s = v.toLowerCase().trim();
+    return s === 'true' || s === '1' || s === 'on';
+  }
+  return Boolean(v);
+};
+
 exports.getAllProducts = async (req, res) => {
   try {
     const { q } = req.query;
@@ -86,17 +95,22 @@ exports.getProductById = async (req, res) => {
 
 exports.addProduct = async (req, res) => {
   try {
+    const isOffer = parseBool(req.body.isOffer);
+    const isBestSeller = parseBool(req.body.isBestSeller);
+    const freeDelivery = parseBool(req.body.freeDelivery);
+    const inStock = parseBool(req.body.inStock);
+
     const newProduct = new Product({
       ...req.body,
       price: Number(req.body.price),
-      offerPrice: req.body.isOffer ? Number(req.body.offerPrice) : undefined,
-      discountPercent: req.body.isOffer ? Number(req.body.discountPercent) : undefined,
-      freeDelivery: !!req.body.freeDelivery,
-      deliveryPrice: req.body.freeDelivery ? 0 : Number(req.body.deliveryPrice),
-      inStock: !!req.body.inStock,
-      stock: Number(req.body.stock),
-      isOffer: !!req.body.isOffer,
-      isBestSeller: !!req.body.isBestSeller
+      offerPrice: isOffer ? Number(req.body.offerPrice) : undefined,
+      discountPercent: isOffer ? Number(req.body.discountPercent) : undefined,
+      freeDelivery: freeDelivery,
+      deliveryPrice: freeDelivery ? 0 : Number(req.body.deliveryPrice || 0),
+      inStock: inStock,
+      stock: (() => { const s = Number(req.body.stock); return Number.isNaN(s) ? 0 : s; })(),
+      isOffer: isOffer,
+      isBestSeller: isBestSeller
     });
     await newProduct.save();
     res.status(201).json({ success: true, message: 'Product created', data: newProduct });
@@ -107,17 +121,22 @@ exports.addProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
+    const isOffer = parseBool(req.body.isOffer);
+    const isBestSeller = parseBool(req.body.isBestSeller);
+    const freeDelivery = parseBool(req.body.freeDelivery);
+    const inStock = parseBool(req.body.inStock);
+
     const updateData = {
       ...req.body,
       price: Number(req.body.price),
-      offerPrice: req.body.isOffer ? Number(req.body.offerPrice) : undefined,
-      discountPercent: req.body.isOffer ? Number(req.body.discountPercent) : undefined,
-      freeDelivery: !!req.body.freeDelivery,
-      deliveryPrice: req.body.freeDelivery ? 0 : Number(req.body.deliveryPrice),
-      inStock: !!req.body.inStock,
-      stock: Number(req.body.stock),
-      isOffer: !!req.body.isOffer,
-      isBestSeller: !!req.body.isBestSeller
+      offerPrice: isOffer ? Number(req.body.offerPrice) : undefined,
+      discountPercent: isOffer ? Number(req.body.discountPercent) : undefined,
+      freeDelivery: freeDelivery,
+      deliveryPrice: freeDelivery ? 0 : Number(req.body.deliveryPrice || 0),
+      inStock: inStock,
+      stock: (() => { const s = Number(req.body.stock); return Number.isNaN(s) ? 0 : s; })(),
+      isOffer: isOffer,
+      isBestSeller: isBestSeller
     };
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json({ success: true, message: 'Product updated', data: updated });

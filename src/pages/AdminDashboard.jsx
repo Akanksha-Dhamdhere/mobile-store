@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { devError } from "../utils/logger";
 import { fetchProducts, fetchAccessories } from "../utils/api";
 import { Bar, Pie } from "react-chartjs-2";
+import '../AdminDashboard.css';
 import {
   Chart,
   CategoryScale,
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
         setHighestSale(salesData.highestSale || null);
         setLowestSale(salesData.lowestSale || null);
       } catch (err) {
-        console.error("Error fetching sales data:", err);
+        devError("Error fetching sales data:", err);
         setSales([]);
         setHighestSale(null);
         setLowestSale(null);

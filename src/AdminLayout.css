@@ -3,7 +3,7 @@
 :root {
   --primary-color: #667eea;
   --secondary-color: #764ba2;
-  --sidebar-width: 280px;
+  --sidebar-width: 200px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }

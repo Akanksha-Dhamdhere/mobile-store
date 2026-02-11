@@ -32,12 +32,95 @@ export default function Help() {
     const userMsg = { text: input, sender: "user" };
     setMessages((prev) => [...prev, userMsg]);
 
+    // Improved keyword-based responder
+    const getResponse = (text) => {
+      const t = (text || '').toLowerCase().trim();
+      
+      // Track Order / Order Status
+      if (t.includes('track') || t.includes('order status') || t.includes('where') || t.includes('my order') || t.includes('order tracking')) {
+        const user = getLoggedInUser();
+        if (!user || !user.email) return { text: 'Please log in to track your orders. Let me help you log in.', sender: 'bot', action: 'auth' };
+        return { text: 'You can track your orders on your Profile page. I\'ll redirect you there now.', sender: 'bot', action: 'navigate', to: '/profile' };
+      }
+
+      // Discounts, Offers, Coupons
+      if (t.includes('discount') || t.includes('offer') || t.includes('coupon') || t.includes('sale') || t.includes('promo') || t.includes('deal')) {
+        return { text: 'We have active offers on products. Check our Products page and homepage for current discounts and special deals.', sender: 'bot', action: 'navigate', to: '/products' };
+      }
+
+      // Pre-order questions
+      if (t.includes('pre-order') || t.includes('pre order') || t.includes('preorder') || t.includes('upcoming')) {
+        return { text: 'Pre-orders are available for selected new devices. Look for the "Pre-order" badge on product pages, or contact support for details.', sender: 'bot' };
+      }
+
+      // Contact & Support
+      if (t.includes('contact') || t.includes('support') || t.includes('help') || t.includes('reach') || t.includes('talk to') || t.includes('email')) {
+        return { text: 'Contact our support team at help@mobileshopy.com. You can also find our contact details in the footer.', sender: 'bot' };
+      }
+
+      // Products, Specs, Details, Price
+      if (t.includes('price') || t.includes('spec') || t.includes('product') || t.includes('details') || t.includes('cost') || t.includes('how much')) {
+        return { text: 'Browse our complete product catalog to view prices, specifications, and detailed information about all our devices.', sender: 'bot', action: 'navigate', to: '/products' };
+      }
+
+      // Payment & Checkout
+      if (t.includes('payment') || t.includes('checkout') || t.includes('pay') || t.includes('card') || t.includes('UPI') || t.includes('refund')) {
+        return { text: 'We accept multiple payment methods including cards, UPI, and online transfers. For refund queries, contact support at help@mobileshopy.com.', sender: 'bot' };
+      }
+
+      // Delivery & Shipping
+      if (t.includes('delivery') || t.includes('ship') || t.includes('when')) {
+        return { text: 'Delivery times depend on your location. Check your order details on the Profile page for estimated delivery. Contact support for specific queries.', sender: 'bot', action: 'navigate', to: '/profile' };
+      }
+
+      // Account & Login
+      if (t.includes('login') || t.includes('password') || t.includes('account') || t.includes('sign up') || t.includes('reset')) {
+        return { text: 'You can log in using your email and password. Use "Forgot Password" if you need to reset it. Contact support if you have issues.', sender: 'bot' };
+      }
+
+      // Reviews & Ratings
+      if (t.includes('review') || t.includes('rate') || t.includes('rating')) {
+        return { text: 'You can browse user reviews on product pages or submit your own review after purchase.', sender: 'bot' };
+      }
+
+      // Availability & Stock
+      if (t.includes('available') || t.includes('stock') || t.includes('in stock') || t.includes('out of stock')) {
+        return { text: 'Check product availability on the Products page. Contact support if an item is out of stock and you want to pre-order.', sender: 'bot', action: 'navigate', to: '/products' };
+      }
+
+      // Return & Warranty
+      if (t.includes('return') || t.includes('exchange') || t.includes('warranty') || t.includes('defect')) {
+        return { text: 'For return, exchange, or warranty issues, please contact our support team at help@mobileshopy.com with your order details.', sender: 'bot' };
+      }
+
+      // General Help
+      if (t.includes('help') || t === 'hi' || t === 'hello' || t === 'hey' || t === '?') {
+        return { text: 'Welcome! I can help you with: tracking orders, finding products, offers, payments, delivery, and customer support.', sender: 'bot' };
+      }
+
+      // Fallback with specific suggestions
+      return {
+        text: "I'm not sure about that. Here are things I can help with:",
+        sender: 'bot',
+        suggestions: [
+          'Track Order',
+          'Browse Products',
+          'View Offers',
+          'Contact Support'
+        ]
+      };
+    };
+
+    const resp = getResponse(input);
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { text: "Thanks for your message! We'll get back to you shortly.", sender: "bot" }
-      ]);
-    }, 1000);
+      setMessages((prev) => [...prev, resp]);
+      if (resp.action === 'navigate' && resp.to) {
+        navigate(resp.to);
+      }
+      if (resp.action === 'auth') {
+        setShowAuthModal(true);
+      }
+    }, 400);
 
     setInput("");
   };
@@ -93,21 +176,39 @@ export default function Help() {
     }
   };
 
+  const handleSuggestion = (label) => {
+    const qa = quickActions.find(q => q.label === label);
+    if (qa) {
+      handleQuickAction(qa.response, qa.label);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { text: `You selected: ${label}`, sender: 'bot' }
+      ]);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6 font-sans">
       {/* Chat Section */}
       <div className="flex flex-col flex-1 h-[80vh] border border-gray-300 rounded-xl p-4 bg-white">
         <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-2">
           {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`max-w-[70%] px-4 py-3 rounded-xl text-sm ${
-                msg.sender === "user"
-                  ? "self-end bg-blue-100"
-                  : "self-start bg-blue-50"
-              }`}
-            >
-              {msg.text}
+            <div key={idx} className={`max-w-[70%] px-4 py-3 rounded-xl text-sm ${msg.sender === "user" ? "self-end bg-blue-100" : "self-start bg-blue-50"}`}>
+              <div>{msg.text}</div>
+              {msg.suggestions && Array.isArray(msg.suggestions) && (
+                <div className="mt-2 flex gap-2 flex-wrap">
+                  {msg.suggestions.map((sug, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestion(sug)}
+                      className="text-xs bg-gray-200 px-2 py-1 rounded-full"
+                    >
+                      {sug}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -205,3 +306,5 @@ export default function Help() {
     </div>
   );
 }
+
+    

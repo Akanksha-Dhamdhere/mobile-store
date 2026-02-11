@@ -54,7 +54,7 @@ function ProductDetails() {
         const data = response.data || response;
         
         if (!data) {
-          console.error("No product data in response");
+          devError("No product data in response");
           setProduct(null);
           return;
         }
@@ -86,7 +86,7 @@ function ProductDetails() {
         // Store fetched model locally so subsequent cart/wishlist checks use the same model
         fetchedModel = getModel(data);
       } catch (err) {
-        console.error("Error fetching product:", err);
+        devError("Error fetching product:", err);
         setProduct(null);
       }
       // Cart & Wishlist from backend

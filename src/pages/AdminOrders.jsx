@@ -95,44 +95,59 @@ export default function AdminOrders() {
         {filteredOrders.length === 0 ? (
           <li className="text-gray-500">No orders found.</li>
         ) : (
-          filteredOrders.map((o) => (
-            <li key={o._id} className="bg-gray-50 p-4 rounded flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-              <span className="font-medium text-gray-800">Order #{o._id}</span>
-              <span className="text-xs text-gray-500">Placed on: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</span>
-              <span className="text-xs text-blue-700 font-semibold">Total: ₹{(o.items || []).reduce((sum, prod) => sum + (Number(prod.price) * Number(prod.quantity || 1)), 0)}</span>
-              <span className={`px-2 py-1 rounded text-xs ${o.status === "Delivered" ? "bg-green-100 text-green-700" : o.status === "Cancelled" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{o.status}</span>
-              <span className="text-sm text-gray-500">{o.userEmail || o.user?.email || ''}</span>
-              <span className="text-sm text-gray-500">{o.paymentInfo?.method || ''}</span>
-              <span className="text-xs text-gray-500">Delivery: {o.deliveryDate ? new Date(o.deliveryDate).toLocaleDateString() : 'Not set'}</span>
-              <span className="text-xs text-gray-500">Address: {o.address || ''}</span>
-              <button className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200" onClick={() => setDetailsOrder(o)}>View Details</button>
-              <select
-                value={o.status}
-                onChange={e => handleStatusChange(o._id, e.target.value)}
-                className="px-2 py-1 rounded border text-xs"
-              >
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Out for Delivery">Out for Delivery</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-              {/* Payment return status for cancelled online/UPI orders */}
-              {tab === 'cancelled' && (o.paymentInfo?.method === 'UPI' || o.paymentInfo?.method === 'Online') && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-blue-700">Payment:</span>
+          filteredOrders.map((o) => {
+            const total = (o.items || []).reduce((sum, prod) => sum + (Number(prod.price) * Number(prod.quantity || 1)), 0);
+            const qty = (o.items || []).reduce((c, i) => c + (Number(i.quantity) || 0), 0);
+            const statusClass = o.status === 'Delivered' ? 'bg-green-100 text-green-700' : o.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700';
+            return (
+              <li key={o._id} className="bg-white rounded-lg shadow-sm p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-start gap-3 w-full md:w-2/6">
+                  <div className="font-semibold text-gray-800">#{o._id}</div>
+                  <div className="text-sm text-gray-500">{o.userEmail || o.user?.email || ''}</div>
+                </div>
+
+                <div className="flex-1 w-full md:w-3/6 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm text-gray-700">Items: {(o.items || []).length} • Qty: {qty}</div>
+                    <div className="text-xs text-gray-500 mt-1">Placed: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</div>
+                  </div>
+                  <div className="text-right mt-2 md:mt-0">
+                    <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusClass}`}>{o.status}</div>
+                    <div className="text-sm font-bold mt-1">₹{total.toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-1/6 justify-end">
+                  <button className="px-3 py-2 bg-blue-600 text-white rounded-md" onClick={() => setDetailsOrder(o)}>Details</button>
                   <select
-                    value={o.paymentReturnStatus || 'Processing'}
-                    onChange={e => handlePaymentReturnStatusChange(o._id, e.target.value)}
-                    className="px-2 py-1 rounded border text-xs"
+                    value={o.status}
+                    onChange={e => handleStatusChange(o._id, e.target.value)}
+                    className="px-2 py-2 rounded border text-sm"
                   >
                     <option value="Processing">Processing</option>
-                    <option value="Returned">Returned</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
                   </select>
                 </div>
-              )}
-            </li>
-          ))
+
+                {tab === 'cancelled' && (o.paymentInfo?.method === 'UPI' || o.paymentInfo?.method === 'Online') && (
+                  <div className="mt-2 md:mt-0 flex items-center gap-2 w-full md:w-1/6 justify-end">
+                    <span className="text-xs font-semibold text-blue-700">Payment:</span>
+                    <select
+                      value={o.paymentReturnStatus || 'Processing'}
+                      onChange={e => handlePaymentReturnStatusChange(o._id, e.target.value)}
+                      className="px-2 py-2 rounded border text-sm"
+                    >
+                      <option value="Processing">Processing</option>
+                      <option value="Returned">Returned</option>
+                    </select>
+                  </div>
+                )}
+              </li>
+            );
+          })
         )}
       </ul>
 

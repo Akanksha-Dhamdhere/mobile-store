@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchProducts, fetchAccessories, updateProduct, updateAccessory } from "../utils/api";
+import { devError } from '../utils/logger';
 
 const PRODUCT_CATEGORIES = ["Smartphones", "Smartwatches", "Tablets", "Laptops"];
 const PRODUCT_BRANDS = ["Apple", "Samsung", "OnePlus", "Xiaomi", "Realme", "Oppo", "Vivo", "Lenovo", "HP", "Dell", "Asus"];
@@ -100,6 +101,7 @@ const AdminEditProduct = () => {
       freeDelivery: !!product.freeDelivery,
       deliveryPrice: product.freeDelivery ? 0 : Number(product.deliveryPrice),
       inStock: !!product.inStock,
+      stock: Number(product.stock || 0),
       images: product.images || imagePreviews || []
     };
     try {
@@ -110,7 +112,9 @@ const AdminEditProduct = () => {
       }
       navigate("/admin/existing-products");
     } catch (err) {
-      alert("Error saving changes. Please try again.");
+      devError('Update product error:', err);
+      const serverMessage = err?.response?.data?.message || err?.message || 'Unknown error';
+      alert(`Error saving changes: ${serverMessage}`);
     }
   };
 

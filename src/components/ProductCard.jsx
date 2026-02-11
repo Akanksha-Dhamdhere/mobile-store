@@ -1,12 +1,16 @@
 import defaultAvatar from '../assets/default-avtar.jpg';
-import React, { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaHeart, FaRegHeart } from "react-icons/fa";
-
+import { getImageUrl } from '../utils/config';
 import AuthModal from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProductCard({
+/**
+ * ProductCard Component - Displays a product or accessory card with actions
+ * Memoized for performance optimization
+ */
+function ProductCard({
   product,
   inCart,
   inWishlist,
@@ -21,22 +25,17 @@ export default function ProductCard({
   cart = [],
   wishlist = [],
 }) {
-  // Helper to get correct image src
-  const getImageSrc = (imgPath) => {
-    if (!imgPath) return defaultAvatar;
-    if (imgPath.startsWith('http')) return imgPath;
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-    return `${backendUrl}${imgPath}`;
-  };
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalReason, setAuthModalReason] = useState("");
   const { user } = useAuth();
+  
   // Robustly determine inCart/inWishlist for both Product and Accessory
   let isInCart = !!inCart;
   let isInWishlist = !!inWishlist;
   const productId = product._id || product.id;
   const model = (product.model && product.model.toLowerCase()) || (product.type && product.type.toLowerCase()) || (product.category && product.category.toLowerCase().includes('accessor') ? 'accessory' : 'product');
+  
   if (cart && cart.length > 0 && typeof inCart === 'undefined') {
     isInCart = cart.some(c => {
       const cid = c.product?._id || c.product?.id || c._id || c.id;
@@ -44,6 +43,7 @@ export default function ProductCard({
       return String(cid) === String(productId) && cmodel === model;
     });
   }
+  
   if (wishlist && wishlist.length > 0 && typeof inWishlist === 'undefined') {
     isInWishlist = wishlist.some(w => {
       const wid = w._id || w.id;
@@ -52,7 +52,7 @@ export default function ProductCard({
     });
   }
 
-  const handleCartClick = (e) => {
+  const handleCartClick = useCallback((e) => {
     e.stopPropagation();
     if (!user) {
       setAuthModalReason("cart");
@@ -64,9 +64,9 @@ export default function ProductCard({
     } else {
       onAddToCart && onAddToCart();
     }
-  };
+  }, [user, isInCart, onAddToCart, onRemoveFromCart]);
 
-  const handleWishlistClick = (e) => {
+  const handleWishlistClick = useCallback((e) => {
     e.stopPropagation();
     if (!user) {
       setAuthModalReason("wishlist");
@@ -78,10 +78,9 @@ export default function ProductCard({
     } else {
       onAddToWishlist && onAddToWishlist();
     }
-  };
+  }, [user, isInWishlist, onAddToWishlist, onRemoveFromWishlist]);
 
-
-  const handleOrderNow = (e) => {
+  const handleOrderNow = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
@@ -90,7 +89,7 @@ export default function ProductCard({
       return;
     }
     navigate("/ordernow", { state: { product, amount: 1 } });
-  };
+  }, [user, product, navigate]);
 
   const handleCardClick = (e) => {
     if (
@@ -100,7 +99,6 @@ export default function ProductCard({
     ) {
       return;
     }
-    const productId = product._id ? product._id : product.id;
     // Always use detailsPath prop for routing, but force accessory detection for robustness
     const isAccessory = [
       product.model,
@@ -129,7 +127,7 @@ export default function ProductCard({
       {/* Full Image Background */}
       <img
         alt={product.name}
-        src={getImageSrc(cardImage)}
+        src={getImageUrl(cardImage)}
         className="absolute inset-0 w-full h-full object-cover object-center rounded-lg"
         style={{ zIndex: 1, height: '100%' }}
         onError={e => { e.target.onerror = null; e.target.src = defaultAvatar; }}
@@ -224,23 +222,6 @@ export default function ProductCard({
             <span className="text-xs text-pink-600 font-semibold">({product.discountPercent}% OFF)</span>
           )}
         </div>
-        {/* Action buttons for product listing */}
-        {showActions && !pageType && (
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleCartClick}
-              className={`flex-1 py-1 rounded text-xs font-semibold border ${isInCart ? 'bg-red-500 text-white border-red-500' : 'bg-white text-blue-700 border-blue-700 hover:bg-blue-700 hover:text-white'} transition`}
-            >
-              {isInCart ? (<><FaTrash /> <span>Remove</span></>) : 'Add to Cart'}
-            </button>
-            <button
-              onClick={handleOrderNow}
-              className="flex-1 bg-blue-700 text-white py-1 rounded text-xs font-semibold hover:bg-blue-800 transition order-now-btn"
-            >
-              Order Now
-            </button>
-          </div>
-        )}
       </div>
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} reason={authModalReason} />
@@ -248,3 +229,12 @@ export default function ProductCard({
     </div>
   );
 }
+
+export default memo(ProductCard, (prevProps, nextProps) => {
+  // Custom comparison for performance optimization
+  return (
+    prevProps.product._id === nextProps.product._id &&
+    prevProps.inCart === nextProps.inCart &&
+    prevProps.inWishlist === nextProps.inWishlist
+  );
+});

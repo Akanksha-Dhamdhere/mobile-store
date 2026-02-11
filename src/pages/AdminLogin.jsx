@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { devWarn, devError } from "../utils/logger";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -51,7 +52,7 @@ export default function AdminLogin() {
           try { 
             await login(meData.user || { email: form.username, password: form.password }); 
           } catch (e) {
-            console.warn('Failed to update auth context:', e);
+            devWarn('Failed to update auth context:', e);
           }
         }
         
@@ -63,7 +64,7 @@ export default function AdminLogin() {
         setError('Only admin can login here.');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      devError('Login error:', err);
       setError("Login failed. Please try again.");
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { devError } from '../utils/logger';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { fetchUserProfile, updateUserProfile, fetchOrders } from '../utils/api';
@@ -8,38 +9,49 @@ import AuthModal from '../components/AuthModal';
 // Note: Using original Tailwind-based UI (previous version)
 
 function OrderListItem({ order, onTrack, onCancel, onReorder, onUserCancel, onClick, onViewDetails, onDelete }) {
-  // Calculate total price for all products in the order
+  // Modern card layout for orders with thumbnail, summary and actions
   const totalPrice = (order.products || []).reduce((sum, prod) => sum + (Number(prod.price) * Number(prod.quantity || 1)), 0);
+  const firstProduct = (order.products && order.products[0]) || {};
+  const itemsCount = (order.products || []).reduce((c, p) => c + (Number(p.quantity) || 0), 0);
+
+  const statusClasses = {
+    'Pending': 'bg-yellow-100 text-yellow-800',
+    'Processing': 'bg-blue-100 text-blue-800',
+    'Shipped': 'bg-indigo-100 text-indigo-800',
+    'Out for Delivery': 'bg-teal-100 text-teal-800',
+    'Delivered': 'bg-green-100 text-green-800',
+    'Cancelled': 'bg-red-100 text-red-800'
+  };
+
   return (
-    <li className="flex flex-col md:flex-row justify-between items-start md:items-center group hover:bg-blue-50 rounded transition-all duration-200 p-2 border border-blue-100 shadow-sm cursor-pointer">
-      <div className="flex flex-col flex-1">
-        <span className="flex items-center gap-2 font-semibold text-blue-900">
-          <span>Order #{order.id}</span>
-        </span>
-        <div className="mt-1 mb-1 flex flex-col sm:flex-row sm:items-center gap-2">
-          <span className="text-xs text-gray-500">Placed on: {order.date && !isNaN(Date.parse(order.date)) ? new Date(order.date).toLocaleDateString() : 'N/A'}</span>
-          <span className="text-xs text-blue-700 font-semibold">Total: ₹{totalPrice}</span>
+    <li className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition p-4 flex flex-col md:flex-row items-center gap-4 cursor-default">
+      <div className="flex items-center gap-3 w-full md:w-2/6">
+        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border">
+          <img src={firstProduct.image || defaultAvatar} alt={firstProduct.name || 'Product'} className="w-full h-full object-cover" onError={(e)=>{e.target.onerror=null;e.target.src=defaultAvatar}} />
         </div>
-        <div className="bg-blue-50 rounded p-2 mb-2">
-          <span className="font-medium text-blue-700 text-sm">Products:</span>
-          <ul className="ml-4 list-disc text-sm">
-            {(order.products || []).map((prod, idx) => (
-              <li key={idx} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                <span className="font-semibold text-blue-800">{prod.name}</span>
-                <span className="text-gray-600">Qty: {prod.quantity}</span>
-                <span className="text-gray-600">Price: ₹{prod.price}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="flex-1">
+          <div className="text-sm text-gray-500">Order</div>
+          <div className="font-semibold text-lg text-gray-800">#{order.id}</div>
+          <div className="text-xs text-gray-500">Placed: {order.date && !isNaN(Date.parse(order.date)) ? new Date(order.date).toLocaleDateString() : 'N/A'}</div>
         </div>
-        <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-          <button onClick={() => onViewDetails(order)} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">View Details</button>
-          {onTrack && <button onClick={onTrack} className="ml-2 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 flex items-center gap-1" title="Track this order">Track</button>}
-          {onCancel && order.status !== 'Cancelled' && <button onClick={onCancel} className="px-2 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 flex items-center gap-1" title="Cancel this order">Cancel Order</button>}
-          {onDelete && (order.status === 'Cancelled' || order.status === 'Delivered') && <button onClick={onDelete} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 flex items-center gap-1" title="Delete this order">Delete</button>}
-          {onReorder && order.status === 'Cancelled' && <button onClick={onReorder} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Reorder</button>}
-          {onUserCancel && order.status === 'Cancelled' && <button onClick={onUserCancel} className="px-2 py-1 bg-gray-400 text-white rounded text-xs hover:bg-gray-600">Remove</button>}
+      </div>
+
+      <div className="flex-1 w-full md:w-3/6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <div className="text-sm text-gray-700">{firstProduct.name ? firstProduct.name : `${itemsCount} item${itemsCount>1?'s':''}`}</div>
+          <div className="text-xs text-gray-500 mt-1">Items: {itemsCount} • {order.products && order.products.length} product{(order.products && order.products.length)>1?'s':''}</div>
         </div>
+        <div className="mt-2 md:mt-0 text-right">
+          <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusClasses[order.status] || 'bg-gray-100 text-gray-700'}`}>{order.status || 'Processing'}</div>
+          <div className="text-sm font-bold text-gray-800 mt-1">₹{totalPrice.toFixed(2)}</div>
+        </div>
+      </div>
+
+      <div className="w-full md:w-1/6 flex justify-end items-center gap-2">
+        <button onClick={() => onViewDetails(order)} className="px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 text-sm">Details</button>
+        {onTrack && <button onClick={onTrack} className="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-md text-sm">Track</button>}
+        {onCancel && order.status !== 'Cancelled' && <button onClick={onCancel} className="px-3 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>}
+        {onDelete && (order.status === 'Cancelled' || order.status === 'Delivered') && <button onClick={onDelete} className="px-3 py-2 bg-gray-800 text-white rounded-md text-sm">Delete</button>}
       </div>
     </li>
   );
@@ -142,8 +154,8 @@ export default function Profile() {
     if (billsRes.data.success) {
       setBills(billsRes.data.data);
     }
-  } catch (billErr) {
-    console.error('Error fetching bills:', billErr);
+    } catch (billErr) {
+    devError('Error fetching bills:', billErr);
   }
       } catch (err) {
         setShowAuthModal(true);
@@ -293,7 +305,7 @@ export default function Profile() {
       setEditMode(false);
       toast.success("Profile updated");
     } catch (err) {
-      console.error('Profile update error:', err);
+      devError('Profile update error:', err);
       const errorMessage = err?.response?.data?.message || err?.message || "Failed to update profile";
       toast.error(errorMessage);
     }
@@ -332,7 +344,7 @@ export default function Profile() {
       setOrders(orders => orders.filter(o => o._id !== orderId && o.id !== orderId));
       toast.success('Order deleted successfully.');
     } catch (err) {
-      console.error('Delete order error:', err);
+      devError('Delete order error:', err);
       toast.error(err?.response?.data?.message || 'Failed to delete order.');
     }
   };
@@ -350,7 +362,7 @@ export default function Profile() {
       setOrders(Array.isArray(ordersData) ? ordersData : []);
       toast.success('Order cancelled successfully.');
     } catch (err) {
-      console.error('Cancel order error:', err);
+      devError('Cancel order error:', err);
       toast.error(err?.response?.data?.message || 'Failed to cancel order.');
     }
   };
@@ -405,7 +417,7 @@ export default function Profile() {
   // (Removed handleClearAllData function)
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-blue-50 to-white md:overflow-hidden" style={{ height: '100vh' }}>
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}  
@@ -413,7 +425,7 @@ export default function Profile() {
         />
       )}
       {/* Sidebar */}
-      <aside className="w-full md:w-72 min-h-[120px] md:min-h-full bg-white border-b md:border-b-0 md:border-r shadow-lg flex flex-row md:flex-col items-center md:items-center py-4 md:py-8 gap-4 md:gap-6 z-10">
+      <aside className="w-full md:w-[30%] min-h-[120px] md:min-h-full bg-white border-b md:border-b-0 md:border-r shadow-lg flex flex-row md:flex-col items-center md:items-start py-4 md:py-8 gap-4 md:gap-6 z-10 md:overflow-y-auto" style={{ flex: '0 0 30%' }}>
         <div className="flex flex-col items-center cursor-pointer w-1/3 md:w-full" onClick={() => setCenterTab('profile')}>
           <img
             src={profile?.avatar && profile?.avatar.trim() !== '' ? profile.avatar : (profile?.profile?.avatar && profile.profile.avatar.trim() !== '' ? profile.profile.avatar : defaultAvatar)}
@@ -467,7 +479,7 @@ export default function Profile() {
         </div>
       </aside>
       {/* Center Content */}
-      <main className="flex-1 flex flex-col items-center justify-start py-6 px-2 sm:px-4 md:px-12 w-full">
+      <main className="w-full md:w-[70%] flex flex-col items-center justify-start py-6 px-2 sm:px-4 md:px-6 md:min-h-full md:overflow-y-auto bg-white" style={{ flex: '0 0 70%' }}>
         {detailsOrder && <AdminOrderDetailsModal order={detailsOrder} onClose={() => setDetailsOrder(null)} /> }
         {/* Danger zone: Remove all users and orders */}
         {/* (Removed 'Remove All User Accounts & Orders' button) */}

@@ -198,6 +198,40 @@
 .bills-table {
   width: 100%;
   border-collapse: collapse;
+
+}
+
+/* Report header and export buttons */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-export {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-export:hover { background: #f0f6fb; }
+
+.btn-export.btn-print { color: #2d3748; }
+.btn-export.btn-pdf { color: #c0392b; }
+.btn-export.btn-excel { color: #27ae60; }
+
+/* Ensure the export buttons don't appear in printouts */
+@media print {
+  .no-print, .export-buttons, .btn-export { display: none !important; }
 }
 
 .bills-table thead {
@@ -448,6 +482,179 @@
   color: #666;
 }
 
+/* View Mode Controls */
+.view-mode-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.view-btn {
+  padding: 10px 20px;
+  background: #ecf0f1;
+  border: 2px solid #bdc3c7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.view-btn.active {
+  background: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.view-btn:hover {
+  border-color: #3498db;
+}
+
+/* Filter Controls */
+.bill-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.control-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-date {
+  padding: 10px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Weekly Bills Container */
+.weekly-bills-container,
+.monthly-bills-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.week-section,
+.month-section {
+  margin-bottom: 30px;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fafbfc;
+}
+
+.week-header,
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #3498db;
+  margin-bottom: 15px;
+}
+
+.week-header h3,
+.month-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.week-stats,
+.month-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week-stats span,
+.month-stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #34495e;
+}
+
+/* Status Breakdown */
+.status-breakdown {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border-left: 4px solid #f39c12;
+}
+
+.status-breakdown h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 8px 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  min-width: 80px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.status-label.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-label.paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-label.partial {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-label.overdue {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.status-label.cancelled {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.status-count {
+  min-width: 60px;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.status-amount {
+  margin-left: auto;
+  font-weight: 600;
+  color: #27ae60;
+}
+
 @media (max-width: 768px) {
   .admin-bill-header {
     flex-direction: column;
@@ -459,8 +666,21 @@
     flex-direction: column;
   }
 
+  .control-row {
+    flex-direction: column;
+  }
+
   .search-input,
-  .filter-select {
+  .filter-select,
+  .filter-date {
+    width: 100%;
+  }
+
+  .view-mode-buttons {
+    flex-direction: column;
+  }
+
+  .view-btn {
     width: 100%;
   }
 
@@ -471,6 +691,19 @@
   .bills-table th,
   .bills-table td {
     padding: 10px;
+  }
+
+  .week-header,
+  .month-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .week-stats,
+  .month-stats {
+    flex-direction: column;
+    gap: 5px;
   }
 
   .detail-header {
@@ -495,4 +728,187 @@
   .btn-close {
     width: 100%;
   }
+
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .status-amount {
+    margin-left: 0;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-export {
+    width: 100%;
+  }
 }
+
+/* Report Header and Export Buttons */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.report-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 22px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-export {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn-print {
+  background: #34495e;
+  color: white;
+}
+
+.btn-print:hover {
+  background: #2c3e50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 73, 94, 0.3);
+}
+
+.btn-pdf {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-pdf:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.btn-excel {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-excel:hover {
+  background: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
+/* Daily, Weekly, Monthly Report Containers */
+.daily-bills-container,
+.weekly-bills-container,
+.monthly-bills-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.day-section,
+.week-section,
+.month-section {
+  border-bottom: 1px solid #ecf0f1;
+  padding: 20px;
+}
+
+.day-section:last-child,
+.week-section:last-child,
+.month-section:last-child {
+  border-bottom: none;
+}
+
+.day-header,
+.week-header,
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+}
+
+.day-header h3,
+.week-header h3,
+.month-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.day-stats,
+.week-stats,
+.month-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: #666;
+}
+
+.day-stats span,
+.week-stats span,
+.month-stats span {
+  padding: 4px 12px;
+  background: #ecf0f1;
+  border-radius: 20px;
+}
+
+/* Print Styles */
+@media print {
+  .admin-bill-container > * {
+    page-break-inside: avoid;
+  }
+
+  .export-buttons {
+    display: none;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  .bills-table {
+    page-break-inside: avoid;
+  }
+
+  .day-section,
+  .week-section,
+  .month-section {
+    page-break-inside: avoid;
+  }
+}
+

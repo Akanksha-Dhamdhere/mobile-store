@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ProductCard from './ProductCard';
 import { fetchLatestOffers, updateWishlist, fetchCart, fetchWishlist } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { devError } from '../utils/logger';
 
 
 
@@ -30,7 +31,7 @@ const Offers = () => {
         setCart((cartData && cartData.data) || []);
         setWishlist((wishlistData && wishlistData.data) || []);
       } catch (err) {
-        console.error("Error fetching offers:", err);
+        devError("Error fetching offers:", err);
         setOffers([]);
         setCart([]);
         setWishlist([]);

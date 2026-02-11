@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { devError } from "../utils/logger";
 import { fetchAccessories, fetchCart, updateCart, fetchWishlist, updateWishlist } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import FilterSidebar from "../components/FilterSidebar";
@@ -42,7 +43,7 @@ export default function Accessories() {
         const data = await fetchAccessories();
         setAccessories(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error fetching accessories:", err);
+        devError("Error fetching accessories:", err);
         setAccessories([]);
       }
       if (user) {

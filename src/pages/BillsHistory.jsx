@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { devError } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
 import axios from 'axios';
+import { generateBillPDF, generateBillsExcel, generateMonthlyBillsSummary } from '../utils/billReportUtils';
 import './BillsHistory.css';
 
 const BillsHistory = () => {
@@ -45,7 +47,7 @@ const BillsHistory = () => {
         return;
       }
       setError(err.response?.data?.message || 'Error fetching bills');
-      console.error('Error fetching bills:', err);
+      devError('Error fetching bills:', err);
     } finally {
       setLoading(false);
     }
@@ -62,8 +64,8 @@ const BillsHistory = () => {
     const printTime = new Date().toLocaleString();
     // Use site logo if available (public folder)
     const shopName = 'Mobile Shop';
-    const shopAddress = ''; // Optional: fill if you have a shop address
-    const shopContact = '';
+    const shopAddress = 'pandharpur'; // Optional: fill if you have a shop address
+    const shopContact = '+918421849728';
 
     const billHTML = `
       <html>
@@ -105,13 +107,13 @@ const BillsHistory = () => {
         <div class="invoice">
           <div class="invoice-header">
             <div class="logo">
-              <img src="/logo192.png" alt="logo" />
+              <img src="/1755792816915.jpg" alt="logo" />
             </div>
             <div class="shop-info">
               <h2>${shopName}</h2>
               ${shopAddress ? `<div class="meta">${shopAddress}</div>` : ''}
               ${shopContact ? `<div class="meta">${shopContact}</div>` : ''}
-              <div class="meta">Invoice: <strong>${bill.billNumber}</strong></div>
+              <div class="meta">Mobile Shop: <strong>${bill.billNumber}</strong></div>
               <div class="meta">Date: <strong>${bill.billDate ? new Date(bill.billDate).toLocaleDateString() : new Date().toLocaleDateString()}</strong></div>
             </div>
           </div>
@@ -125,7 +127,7 @@ const BillsHistory = () => {
             </div>
 
             <div class="invoice-details">
-              <h4>Invoice Details</h4>
+              <h4>Customer bill Details</h4>
               <div>Status: <strong>${bill.status || 'N/A'}</strong></div>
               <div>Payment: <strong>${bill.paymentMethod || 'N/A'}</strong></div>
               <div>Printed: <strong>${printTime}</strong></div>
@@ -173,7 +175,7 @@ const BillsHistory = () => {
           <div class="footer">
             <div>
               <div>Thank you for your business!</div>
-              <div>If you have any questions, contact us at support@example.com</div>
+              <div>If you have any questions, contact us at dhamdhereakanksha162@gmail.com</div>
             </div>
             <div class="signature">
               _______________________<br />Authorized Signature
@@ -184,10 +186,18 @@ const BillsHistory = () => {
       </html>
     `;
 
-    printWindow.document.write(billHTML);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    if (printWindow) {
+      if (printWindow.document) {
+        printWindow.document.write(billHTML);
+        printWindow.document.close();
+      }
+      if (typeof printWindow.focus === 'function') {
+        printWindow.focus();
+      }
+      if (typeof printWindow.print === 'function') {
+        printWindow.print();
+      }
+    }
   };
 
   const isNotCancelled = (bill) => {
@@ -313,6 +323,9 @@ const BillsHistory = () => {
               <button className="btn-print" onClick={() => handlePrintBill(selectedBill)}>
                 🖨️ Print Bill
               </button>
+              <button className="btn-pdf" onClick={() => generateBillPDF(selectedBill)} style={{ backgroundColor: '#d32f2f', marginLeft: '10px' }}>
+                📄 Download PDF
+              </button>
               <button className="btn-close" onClick={() => setSelectedBill(null)}>
                 Close
               </button>
@@ -333,6 +346,38 @@ const BillsHistory = () => {
               <option value="Partial">Partial</option>
               <option value="Overdue">Overdue</option>
             </select>
+            <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+              <button 
+                onClick={() => generateBillsExcel(filteredBills)}
+                style={{ 
+                  padding: '8px 15px', 
+                  backgroundColor: '#4CAF50', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+                disabled={filteredBills.length === 0}
+              >
+                📊 Export to Excel
+              </button>
+              <button 
+                onClick={() => generateMonthlyBillsSummary(filteredBills)}
+                style={{ 
+                  padding: '8px 15px', 
+                  backgroundColor: '#2196F3', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+                disabled={filteredBills.length === 0}
+              >
+                📈 Monthly Summary
+              </button>
+            </div>
           </div>
 
           {filteredBills.length > 0 ? (

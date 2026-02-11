@@ -27,35 +27,59 @@ router.post('/login/clerk', async (req, res) => {
 // Signup
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, mobile, idToken } = req.body;
-    if (!mobile || typeof mobile !== 'string' || !mobile.trim()) {
-      return res.status(400).json({ message: 'Mobile number is required' });
+    const { name, email, password, mobile } = req.body;
+    
+    // Basic validation
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
     }
-    if (!idToken) {
-      return res.status(400).json({ message: 'Firebase ID token required for mobile verification' });
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required' });
     }
-    // Verify Firebase ID token
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-      });
-    }
-    let decodedToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(idToken);
-    } catch (err) {
-      return res.status(400).json({ message: 'Invalid Firebase ID token' });
-    }
-    if (!decodedToken.phone_number || !decodedToken.phone_number.endsWith(mobile)) {
-      return res.status(400).json({ message: 'Mobile number mismatch or not verified' });
-    }
+
+    // Check if email already exists
     const existingEmail = await User.findOne({ email });
-    if (existingEmail) return res.status(400).json({ message: 'Email already exists' });
-    const existingMobile = await User.findOne({ mobile });
-    if (existingMobile) return res.status(400).json({ message: 'Mobile number already exists' });
+    if (existingEmail) return res.status(400).json({ message: 'Email already registered' });
+
+    // If mobile is provided, check if it already exists
+    if (mobile) {
+      const existingMobile = await User.findOne({ mobile });
+      if (existingMobile) return res.status(400).json({ message: 'Mobile number already registered' });
+    }
+
+    // Hash password
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hash, mobile });
-    res.status(201).json({ user });
+    
+    // Create user
+    const user = await User.create({ 
+      name: name || email.split('@')[0], 
+      email, 
+      password: hash,
+      mobile: mobile || '',
+      hasPassword: true,
+      role: 'user'
+    });
+
+    // Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    
+    // Set cookie
+    res.cookie('token', token, { 
+      httpOnly: true, 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/'
+    });
+
+    res.status(201).json({ 
+      message: 'Signup successful', 
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -115,6 +139,12 @@ router.get('/me', async (req, res) => {
 router.post('/google-login', async (req, res) => {
   try {
     const { token } = req.body;
+    // Initialize Firebase Admin if not already initialized
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+      });
+    }
     const decoded = await admin.auth().verifyIdToken(token);
     let user = await User.findOne({ email: decoded.email });
     if (!user) {

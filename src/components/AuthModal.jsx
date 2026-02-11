@@ -5,6 +5,7 @@ import { useSignUp, useClerk } from "@clerk/clerk-react";
 import { useAuth } from "../context/AuthContext";
 import { FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
+// devError removed from here to avoid unused import; logger is used in other modules
 
 
 
@@ -287,8 +288,6 @@ export default function AuthModal({ onClose, role }) {
               </button>
             </form>
             <div className="my-2 w-full flex flex-col items-center">
-              
-              
               <button
                 type="button"
                 className="w-full text-blue-600 underline text-sm mt-2"

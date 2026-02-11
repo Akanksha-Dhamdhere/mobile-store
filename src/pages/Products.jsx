@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { devError } from "../utils/logger";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchCart, updateCart, fetchWishlist, updateWishlist, fetchProducts } from "../utils/api";
@@ -41,7 +42,7 @@ export default function Products() {
         const data = await fetchProducts();
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        devError("Error fetching products:", err);
         setProducts([]);
       }
       if (user) {

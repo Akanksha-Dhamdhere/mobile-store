@@ -287,3 +287,337 @@ exports.getBillsStatistics = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', data: null });
   }
 };
+
+// Get daily bills with filter and aggregation
+exports.getDailyBills = async (req, res) => {
+  try {
+    const { startDate, endDate, status, paymentMethod } = req.query;
+    
+    // Build filter object
+    const filter = {};
+    
+    // Date range filter
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.createdAt.$lte = new Date(endDate);
+      }
+    }
+    
+    // Status filter
+    if (status) {
+      filter.status = status;
+    }
+    
+    // Payment method filter
+    if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    const dailyBills = await Bill.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' }
+          },
+          totalBills: { $sum: 1 },
+          totalRevenue: { $sum: '$total' },
+          totalTax: { $sum: '$tax' },
+          totalDiscount: { $sum: '$discount' },
+          averageValue: { $avg: '$total' },
+          billIds: { $push: '$_id' }
+        }
+      },
+      { $sort: { '_id.year': -1, '_id.month': -1, '_id.day': -1 } }
+    ]);
+
+    // Fetch detailed bills for each day
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const detailedDailyBills = await Promise.all(
+      dailyBills.map(async (day) => {
+        const bills = await Bill.find({ _id: { $in: day.billIds } })
+          .populate('order', 'orderNumber')
+          .populate('user', 'name email')
+          .sort({ createdAt: -1 });
+        
+        return {
+          ...day,
+          bills,
+          dayLabel: `${monthNames[day._id.month - 1]} ${day._id.day}, ${day._id.year}`
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      message: 'Daily bills fetched',
+      data: detailedDailyBills
+    });
+  } catch (err) {
+    console.error('Error fetching daily bills:', err);
+    res.status(500).json({ success: false, message: 'Server error', data: null });
+  }
+};
+
+// Get weekly bills with filter and aggregation
+exports.getWeeklyBills = async (req, res) => {
+  try {
+    const { startDate, endDate, status, paymentMethod } = req.query;
+    
+    // Build filter object
+    const filter = {};
+    
+    // Date range filter
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.createdAt.$lte = new Date(endDate);
+      }
+    }
+    
+    // Status filter
+    if (status) {
+      filter.status = status;
+    }
+    
+    // Payment method filter
+    if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    const weeklyBills = await Bill.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: {
+            year: { $isoWeekYear: '$createdAt' },
+            week: { $isoWeek: '$createdAt' }
+          },
+          totalBills: { $sum: 1 },
+          totalRevenue: { $sum: '$total' },
+          totalTax: { $sum: '$tax' },
+          averageValue: { $avg: '$total' },
+          billIds: { $push: '$_id' }
+        }
+      },
+      { $sort: { '_id.year': -1, '_id.week': -1 } }
+    ]);
+
+    // Fetch detailed bills for each week
+    const detailedWeeklyBills = await Promise.all(
+      weeklyBills.map(async (week) => {
+        const bills = await Bill.find({ _id: { $in: week.billIds } })
+          .populate('order', 'orderNumber')
+          .populate('user', 'name email')
+          .sort({ createdAt: -1 });
+        
+        return {
+          ...week,
+          bills,
+          weekLabel: `Week ${week._id.week}, ${week._id.year}`
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      message: 'Weekly bills fetched',
+      data: detailedWeeklyBills
+    });
+  } catch (err) {
+    console.error('Error fetching weekly bills:', err);
+    res.status(500).json({ success: false, message: 'Server error', data: null });
+  }
+};
+
+// Get monthly bills with filter and aggregation
+exports.getMonthlyBills = async (req, res) => {
+  try {
+    const { startDate, endDate, status, paymentMethod } = req.query;
+    
+    // Build filter object
+    const filter = {};
+    
+    // Date range filter
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.createdAt.$lte = new Date(endDate);
+      }
+    }
+    
+    // Status filter
+    if (status) {
+      filter.status = status;
+    }
+    
+    // Payment method filter
+    if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    const monthlyBills = await Bill.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          totalBills: { $sum: 1 },
+          totalRevenue: { $sum: '$total' },
+          totalTax: { $sum: '$tax' },
+          totalDiscount: { $sum: '$discount' },
+          averageValue: { $avg: '$total' },
+          statusBreakdown: {
+            $push: {
+              status: '$status',
+              amount: '$total'
+            }
+          },
+          billIds: { $push: '$_id' }
+        }
+      },
+      { $sort: { '_id.year': -1, '_id.month': -1 } }
+    ]);
+
+    // Fetch detailed bills for each month
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const detailedMonthlyBills = await Promise.all(
+      monthlyBills.map(async (month) => {
+        const bills = await Bill.find({ _id: { $in: month.billIds } })
+          .populate('order', 'orderNumber')
+          .populate('user', 'name email')
+          .sort({ createdAt: -1 });
+        
+        // Aggregate status breakdown
+        const statusSummary = {};
+        month.statusBreakdown.forEach(item => {
+          if (!statusSummary[item.status]) {
+            statusSummary[item.status] = { count: 0, total: 0 };
+          }
+          statusSummary[item.status].count++;
+          statusSummary[item.status].total += item.amount;
+        });
+
+        return {
+          ...month,
+          bills,
+          monthLabel: `${monthNames[month._id.month - 1]} ${month._id.year}`,
+          statusSummary
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      message: 'Monthly bills fetched',
+      data: detailedMonthlyBills
+    });
+  } catch (err) {
+    console.error('Error fetching monthly bills:', err);
+    res.status(500).json({ success: false, message: 'Server error', data: null });
+  }
+};
+
+// Get bills with advanced filtering
+exports.getBillsFiltered = async (req, res) => {
+  try {
+    const { 
+      status, 
+      paymentMethod, 
+      startDate, 
+      endDate, 
+      minAmount, 
+      maxAmount,
+      userId,
+      searchTerm
+    } = req.query;
+
+    const filter = {};
+
+    // Status filter
+    if (status) {
+      filter.status = status;
+    }
+
+    // Payment method filter
+    if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.createdAt.$lte = new Date(endDate);
+      }
+    }
+
+    // Amount range filter
+    if (minAmount || maxAmount) {
+      filter.total = {};
+      if (minAmount) {
+        filter.total.$gte = parseFloat(minAmount);
+      }
+      if (maxAmount) {
+        filter.total.$lte = parseFloat(maxAmount);
+      }
+    }
+
+    // User filter
+    if (userId) {
+      filter.user = userId;
+    }
+
+    // Search filter
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm, 'i');
+      filter.$or = [
+        { billNumber: searchRegex },
+        { userName: searchRegex },
+        { userEmail: searchRegex },
+        { notes: searchRegex }
+      ];
+    }
+
+    const bills = await Bill.find(filter)
+      .populate('order', 'orderNumber')
+      .populate('user', 'name email')
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Filtered bills fetched',
+      count: bills.length,
+      data: bills
+    });
+  } catch (err) {
+    console.error('Error fetching filtered bills:', err);
+    res.status(500).json({ success: false, message: 'Server error', data: null });
+  }
+};

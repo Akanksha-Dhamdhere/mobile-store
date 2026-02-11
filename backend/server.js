@@ -174,21 +174,54 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    // Handle errors such as EADDRINUSE so we show a clear message and exit
-    server.on('error', (err) => {
-      if (err && err.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Another process is listening on this port.`);
-        console.error('Tip: run `netstat -ano | findstr :5000` (Windows) or `lsof -i :5000` (macOS/Linux) to find and kill the process, or run `npx kill-port 5000`.');
-        process.exit(1);
-      }
-      console.error('Server error:', err);
+// Start server once DB connection established
+let serverInstance = null;
+const startServer = () => {
+  if (serverInstance) return;
+  serverInstance = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  serverInstance.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use. Another process is listening on this port.`);
+      console.error('Tip: run `netstat -ano | findstr :' + PORT + '` (Windows) or `lsof -i :' + PORT + '` (macOS/Linux) to find and kill the process, or run `npx kill-port ' + PORT + '`.');
       process.exit(1);
+    }
+    console.error('Server error:', err);
+    process.exit(1);
+  });
+};
+
+// Connect to MongoDB with retry/backoff to tolerate transient network issues
+const mongooseOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+const maxRetries = parseInt(process.env.MONGO_CONNECT_MAX_RETRIES || '5', 10);
+const initialDelayMs = parseInt(process.env.MONGO_CONNECT_INITIAL_DELAY_MS || '2000', 10);
+
+const connectWithRetry = (retriesLeft = maxRetries, delayMs = initialDelayMs) => {
+  console.log(`Attempting MongoDB connection. Retries left: ${retriesLeft}`);
+  mongoose.connect(process.env.MONGO_URI, mongooseOptions)
+    .then(() => {
+      console.log('MongoDB connected');
+      startServer();
+    })
+    .catch((err) => {
+      console.error('MongoDB connection error:', err && err.message ? err.message : err);
+
+      // If this is a network timeout / transient error, retry with exponential backoff
+      if (retriesLeft > 0) {
+        const nextDelay = Math.min(delayMs * 2, 60000); // cap at 60s
+        console.log(`Retrying MongoDB connection in ${delayMs}ms...`);
+        setTimeout(() => connectWithRetry(retriesLeft - 1, nextDelay), delayMs);
+      } else {
+        console.error('Exhausted MongoDB connection retries. Please check network access and MONGO_URI.');
+        // Keep process alive to allow operator to inspect logs, unless explicitly configured to exit
+        if (process.env.EXIT_ON_DB_FAILURE === 'true') {
+          process.exit(1);
+        }
+      }
     });
-  })
-  .catch((err) => console.error('MongoDB connection error:', err));
+};
+
+// Kick off connection attempts
+connectWithRetry();
 
 // Razorpay instance (only if credentials are present)
 let razorpay = null;

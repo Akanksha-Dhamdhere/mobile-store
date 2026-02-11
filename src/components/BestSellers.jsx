@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchCart, updateCart, fetchWishlist, updateWishlist } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { devError } from '../utils/logger';
 
 
 
@@ -29,7 +30,7 @@ const BestSellers = () => {
         const bestSellersArray = data?.data ? data.data : (Array.isArray(data) ? data : []);
         setBestSellers(Array.isArray(bestSellersArray) ? bestSellersArray : []);
       } catch (err) {
-        console.error("Error fetching best sellers:", err);
+        devError("Error fetching best sellers:", err);
         setBestSellers([]);
       }
       setLoading(false);

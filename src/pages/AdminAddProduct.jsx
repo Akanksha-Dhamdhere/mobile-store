@@ -12,10 +12,10 @@ const AdminAddProduct = () => {
     brand: "",
     color: "",
     description: "",
-    offer: false,
+    isOffer: false,
     offerPrice: "",
     discountPercent: "",
-    bestSeller: false,
+    isBestSeller: false,
     freeDelivery: false,
     deliveryPrice: "",
     inStock: true,
@@ -70,10 +70,10 @@ const AdminAddProduct = () => {
     const newProduct = {
       ...product,
       price: Number(product.price),
-      isOffer: !!product.offer,
-      isBestSeller: !!product.bestSeller,
-      offerPrice: product.offer ? Number(product.offerPrice) : undefined,
-      discountPercent: product.offer ? Number(product.discountPercent) : undefined,
+      isOffer: !!product.isOffer,
+      isBestSeller: !!product.isBestSeller,
+      offerPrice: product.isOffer ? Number(product.offerPrice) : undefined,
+      discountPercent: product.isOffer ? Number(product.discountPercent) : undefined,
       freeDelivery: !!product.freeDelivery,
       deliveryPrice: product.freeDelivery ? 0 : Number(product.deliveryPrice),
       inStock: !!product.inStock,
@@ -83,7 +83,7 @@ const AdminAddProduct = () => {
     try {
       if (productType === "Product") {
         await addProduct(newProduct);
-      } else {
+        } else {
         const accessoryData = {
           name: product.name,
           price: Number(product.price),
@@ -94,11 +94,11 @@ const AdminAddProduct = () => {
           color: product.color,
           inStock: !!product.inStock,
           stock: Number(product.stock),
-          isOffer: !!product.offer,
-          isBestSeller: !!product.bestSeller,
+          isOffer: !!product.isOffer,
+          isBestSeller: !!product.isBestSeller,
           description: product.description,
-          offerPrice: product.offer ? Number(product.offerPrice) : 0,
-          discountPercent: product.offer ? Number(product.discountPercent) : 0,
+          offerPrice: product.isOffer ? Number(product.offerPrice) : 0,
+          discountPercent: product.isOffer ? Number(product.discountPercent) : 0,
           freeDelivery: !!product.freeDelivery,
           deliveryPrice: product.freeDelivery ? 0 : Number(product.deliveryPrice)
         };
@@ -198,8 +198,8 @@ const AdminAddProduct = () => {
   {/* Removed size field */}
         <input className="w-full border p-2 rounded" name="tags" placeholder="Tags (comma separated)" value={product.tags} onChange={handleChange} />
         <div className="flex gap-4 items-center">
-          <label className="flex items-center gap-2"><input type="checkbox" name="offer" checked={product.offer} onChange={handleChange} /> Offer</label>
-          {product.offer && (
+          <label className="flex items-center gap-2"><input type="checkbox" name="isOffer" checked={product.isOffer} onChange={handleChange} /> Offer</label>
+          {product.isOffer && (
             <>
               <input className="border p-2 rounded" name="offerPrice" placeholder="Offer Price" type="number" min="1" value={product.offerPrice} onChange={handleChange} />
               <input className="border p-2 rounded" name="discountPercent" placeholder="Discount %" type="number" min="0" max="100" value={product.discountPercent} onChange={handleChange} />
@@ -207,7 +207,7 @@ const AdminAddProduct = () => {
           )}
         </div>
         <div className="flex gap-4 items-center">
-          <label className="flex items-center gap-2"><input type="checkbox" name="bestSeller" checked={product.bestSeller} onChange={handleChange} /> Best Seller</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="isBestSeller" checked={product.isBestSeller} onChange={handleChange} /> Best Seller</label>
           <label className="flex items-center gap-2"><input type="checkbox" name="freeDelivery" checked={product.freeDelivery} onChange={handleChange} /> Free Delivery</label>
           {!product.freeDelivery && (
             <input className="border p-2 rounded" name="deliveryPrice" placeholder="Delivery Price" type="number" min="0" value={product.deliveryPrice} onChange={handleChange} />

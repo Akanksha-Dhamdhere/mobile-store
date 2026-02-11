@@ -5,12 +5,12 @@ const productsData = [
     id: 101,
     name: "iPhone 15 Pro",
     price: 120000,
-    image: "https://m.media-amazon.com/images/I/81fxjeu8fdL._AC_UY327_FMwebp_QL65_.jpg",
+    image: "/images/apple_2.1.webp",
     images: [
-      "https://m.media-amazon.com/images/I/81fxjeu8fdL._AC_UY327_FMwebp_QL65_.jpg",
-      "https://m.media-amazon.com/images/I/712CBkmhLhL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/617JW0DrG8L._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/51brdXeugJL._SL1500_.jpg"
+      "/images/apple_2.1.webp",
+      "/images/apple_2.2.jpg",
+      "/images/apple_2.3.jpg",
+      "/images/apple_2.4.jpg"
     ],
     category: "Smartphones",
     brand: "Apple",
@@ -27,11 +27,11 @@ const productsData = [
     id: 102,
     name: "Redmi Note 13 Pro",
     price: 24999,
-    image: "https://m.media-amazon.com/images/I/51Qfyn4vOjL._SX300_SY300_QL70_FMwebp_.jpg",
+    image: "/images/redmi3.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/51Qfyn4vOjL._SX300_SY300_QL70_FMwebp_.jpg",
-      "https://www.renderhub.com/rever-art/xiaomi-redmi-note-13-pro-arctic-white/xiaomi-redmi-note-13-pro-arctic-white-14.jpg",
-      "https://www.notebookcheck.net/fileadmin/Notebooks/News/_nc3/20redminote13header.jpg"
+      "/images/redmi3.1.jpg",
+      "/images/redmi3.2.jpg",
+      "/images/redmi3.3.jpg"
     ],
     category: "Smartphones",
     brand: "Xiaomi",
@@ -69,12 +69,12 @@ const productsData = [
     id: 104,
     name: "Samsung Galaxy Watch 6",
     price: 24999,
-    image: "https://m.media-amazon.com/images/I/41Q+MNft5ML._SY300_SX300_.jpg",
+    image: "/images/samsung5.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/41Q+MNft5ML._SY300_SX300_.jpg",
-      "https://m.media-amazon.com/images/I/71HKLAmV6SL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/811RIOYTm0L._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/61JIwdYEzDL._SL1500_.jpg"
+      "/images/samsung5.1.jpg",
+      "/images/samsung5.2.jpg",
+      "/images/samsung5.3.jpg",
+      "/images/samsung5.4.jpg"
     ],
     category: "Smartwatches",
     brand: "Samsung",
@@ -197,12 +197,12 @@ const productsData = [
     id: 110,
     name: "HP Pavilion 15",
     price: 74999,
-    image: "https://m.media-amazon.com/images/I/71bw2H9xQ1L._SL1500_.jpg",
+    image: "/images/hp11.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/71bw2H9xQ1L._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71-yuf1JRHL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/715Skaxx0CL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/61GEL26QnAL._SL1500_.jpg"
+      "/images/hp11.1.jpg",
+      "/images/hp11.2.jpg",
+      "/images/hp11.3.jpg",
+      "/images/hp11.4.jpg"
     ],
     category: "Laptops",
     brand: "HP",
@@ -218,12 +218,12 @@ const productsData = [
     id: 111,
     name: "Dell Inspiron 15",
     price: 69999,
-    image: "https://m.media-amazon.com/images/I/41mr-soLnxL._SX300_SY300_QL70_FMwebp_.jpg",
+    image: "/images/dell12.1.webp",
     images: [
-      "https://m.media-amazon.com/images/I/41mr-soLnxL._SX300_SY300_QL70_FMwebp_.jpg",
-      "https://m.media-amazon.com/images/I/61Gmlf8jJdL._SL1080_.jpg",
-      "https://m.media-amazon.com/images/I/61uXQhbNmML._SL1080_.jpg",
-      "https://m.media-amazon.com/images/I/61ENUXXQLqL._SL1080_.jpg"
+      "/images/dell12.1.webp",
+      "/images/dell12.2.jpg",
+      "/images/dell12.3.jpg",
+      "/images/dell12.4.jpg"
     ],
     category: "Laptops",
     brand: "Dell",
@@ -239,12 +239,12 @@ const productsData = [
     id: 112,
     name: "Asus VivoBook 14",
     price: 59999,
-    image: "https://m.media-amazon.com/images/I/71Mh-ltniDL._SL1500_.jpg",
+    image: "/images/asus12.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/71Mh-ltniDL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71S8U9VzLTL._AC_UY218_.jpg",
-      "https://m.media-amazon.com/images/I/81-hLxe38BL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/81+bpNQrw9L._SL1500_.jpg"
+      "/images/asus12.1.jpg",
+      "/images/asus12.2.jpg",
+      "/images/asus12.3.jpg",
+      "/images/asus12.4.jpg"
     ],
     category: "Laptops",
     brand: "Asus",
@@ -261,12 +261,12 @@ const productsData = [
     id: 113,
     name: "Boat Rockerz 450 Pro",
     price: 1999,
-    image: "https://m.media-amazon.com/images/I/711l4y8aNlL._SL1500_.jpg",
+    image: "/images/boat1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/711l4y8aNlL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71Ls5i3fB3L._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71TIEZXXxkL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71iwxemAZBL._SL1500_.jpg"
+      "/images/boat1.jpg",
+      "/images/boat2.jpg",
+      "/images/boat3.jpg",
+      "/images/boat4.jpg"
     ],
     category: "Accessories",
     brand: "Boat",
@@ -282,12 +282,12 @@ const productsData = [
     id: 116,
     name: "JBL Tune 510BT",
     price: 2999,
-    image: "https://m.media-amazon.com/images/I/61kFL7ywsZS._SL1500_.jpg",
+    image: "/images/jbl.14.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/61kFL7ywsZS._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/61567V7b75S._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/61Z5ypZ-kiL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/51Bb0eFN7jS._SL1500_.jpg"
+      "/images/jbl.14.1.jpg",
+      "/images/jbl.14.2.jpg",
+      "/images/jbl.14.3.jpg",
+      "/images/jbl.14.4.jpg"
     ],
     category: "Accessories",
     brand: "JBL",
@@ -304,12 +304,12 @@ const productsData = [
     id: 114,
     name: "Vivo Y29 Pro",
     price: 28999,
-    image: "https://m.media-amazon.com/images/I/71MqvSTLQgL._SL1500_.jpg",
+    image: "/images/vivo15.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/71MqvSTLQgL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/81iVhpEsmqL._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/61Tgxiz3p0L._SL1500_.jpg",
-      "https://m.media-amazon.com/images/I/71WdDQAZjxL._SL1500_.jpg"
+      "/images/vivo15.1.jpg",
+      "/images/vivo15.2.jpg",
+      "/images/vivo15.3.jpg",
+      "/images/vivo15.4.jpg"
     ],
     category: "Smartphones",
     brand: "Vivo",
@@ -326,12 +326,12 @@ const productsData = [
     id: 115,
     name: "Oppo Reno 11",
     price: 31999,
-    image: "https://m.media-amazon.com/images/I/61Gq6YKRQlL._SL1000_.jpg",
+    image: "/images/oppo_1.1.jpg",
     images: [
-      "https://m.media-amazon.com/images/I/61Gq6YKRQlL._SL1000_.jpg",
-      "https://m.media-amazon.com/images/I/51P4Wfy9nCL._SL1000_.jpg",
-      "https://m.media-amazon.com/images/I/61oXxOllCYL._SL1000_.jpg",
-      "https://m.media-amazon.com/images/I/41TVCswSKsL._SL1000_.jpg"
+      "/images/oppo_1.1.jpg",
+      "/images/oppo_1.2.jpg",
+      "/images/oppo_1.3.jpg",
+      "/images/oppo_1.4.jpg"
     ],
     category: "Smartphones",
     brand: "Oppo",
