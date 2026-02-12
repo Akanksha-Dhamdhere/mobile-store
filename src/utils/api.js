@@ -81,17 +81,29 @@ export const deleteProduct = async (id) => {
 };
 
 export const addAccessory = async (accessory) => {
-  const res = await axios.post(`${API_BASE}/accessories`, accessory);
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  const res = await axios.post(`${API_BASE}/accessories`, accessory, {
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
   return res.data;
 };
 
 export const updateAccessory = async (id, accessory) => {
-  const res = await axios.put(`${API_BASE}/accessories/${id}`, accessory);
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  const res = await axios.put(`${API_BASE}/accessories/${id}`, accessory, {
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
   return res.data;
 };
 
 export const deleteAccessory = async (id) => {
-  const res = await axios.delete(`${API_BASE}/accessories/${id}`);
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  const res = await axios.delete(`${API_BASE}/accessories/${id}`, {
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
   return res.data;
 };
 // User Authentication & Profile

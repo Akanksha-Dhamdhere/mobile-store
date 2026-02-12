@@ -2,6 +2,7 @@
   "name": "mobile-website",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://yourusername.github.io/your-repo-name/",
   "dependencies": {
     "@clerk/clerk-js": "^5.80.0",
     "@clerk/clerk-react": "^5.39.0",

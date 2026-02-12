@@ -51,7 +51,6 @@ export default function OrderNow() {
   const [showPopup, setShowPopup] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistProducts, setWishlistProducts] = useState([]);
-  const [wishlistModalKey] = useState(0);
   const [orderError, setOrderError] = useState("");
   const [wishlistError, setWishlistError] = useState("");
 
@@ -65,10 +64,9 @@ export default function OrderNow() {
 
   useEffect(() => {
     const fetchUserWishlist = async () => {
-      if (showWishlistModal) {
+      if (showWishlistModal && user?.id) {
         try {
           setWishlistError("");
-          // Debug: Modal open, fetching wishlist
           devLog("Wishlist modal opened, fetching wishlist for user:", user?.id);
           const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
           const res = await axios.get(`${backendUrl}/api/users/by-external-id/${user.id}`);
@@ -86,13 +84,13 @@ export default function OrderNow() {
           setWishlistProducts([]);
           setWishlistError("Could not load wishlist. Please try again later.");
         }
-      } else {
+      } else if (!showWishlistModal) {
         setWishlistProducts([]);
         setWishlistError("");
       }
     };
     fetchUserWishlist();
-  }, [showWishlistModal, wishlistModalKey, user]);
+  }, [showWishlistModal, user]);
 
   // Run once on mount to prefill shipping data from localStorage
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,10 +257,8 @@ export default function OrderNow() {
           <h3 className="font-semibold mb-2">Shipping Information</h3>
           {/* <div className="flex gap-4 mb-4">
             <button
-              className="flex items-center gap
-              -2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-transform hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-transform hover:scale-105"
               onClick={() => {
-                setWishlistModalKey(k => k + 1);
                 setShowWishlistModal(true);
               }}
               disabled={!isLoaded || !user || !user.id}

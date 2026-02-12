@@ -194,33 +194,42 @@ exports.updateAccessory = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Only administrators can update accessories' });
     }
 
-    const updateData = {
-      name: req.body.name || "",
-      price: req.body.price !== undefined ? Number(req.body.price) : 0,
-      image: req.body.image || "",
-      images: Array.isArray(req.body.images) ? req.body.images : (req.body.image ? [req.body.image] : []),
-      category: req.body.category || "",
-      brand: req.body.brand || "",
-      color: req.body.color || "",
-      ratings: Array.isArray(req.body.ratings) ? req.body.ratings : [],
-      reviews: Array.isArray(req.body.reviews) ? req.body.reviews : [],
-      inStock: req.body.inStock !== undefined ? !!req.body.inStock : false,
-      stock: req.body.stock !== undefined ? Number(req.body.stock) : 0,
-      isOffer: req.body.isOffer !== undefined ? !!req.body.isOffer : false,
-      isBestSeller: req.body.isBestSeller !== undefined ? !!req.body.isBestSeller : false,
-      badge: req.body.badge || "",
-      description: req.body.description || "",
-      offerPrice: req.body.offerPrice !== undefined ? Number(req.body.offerPrice) : 0,
-      discountPercent: req.body.discountPercent !== undefined ? Number(req.body.discountPercent) : 0,
-      freeDelivery: req.body.freeDelivery !== undefined ? !!req.body.freeDelivery : false,
-      deliveryPrice: req.body.freeDelivery ? 0 : (req.body.deliveryPrice !== undefined ? Number(req.body.deliveryPrice) : 0),
-      size: req.body.size || "",
-      tags: req.body.tags || ""
-    };
-    const updated = await Accessory.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!updated) {
-      return res.status(404).json({ success: false, message: 'Accessory not found' });
+    // Verify accessory exists before updating
+    const accessory = await Accessory.findById(req.params.id);
+    if (!accessory) {
+      return res.status(404).json({ success: false, message: 'Accessory not found', data: null });
     }
+
+    const updateData = {
+      name: req.body.name !== undefined ? String(req.body.name).trim() : accessory.name,
+      price: req.body.price !== undefined ? Number(req.body.price) : accessory.price,
+      image: req.body.image !== undefined ? String(req.body.image).trim() : accessory.image,
+      images: Array.isArray(req.body.images) ? req.body.images : (req.body.image ? [String(req.body.image).trim()] : accessory.images || []),
+      category: req.body.category !== undefined ? String(req.body.category).trim() : accessory.category,
+      brand: req.body.brand !== undefined ? String(req.body.brand).trim() : accessory.brand,
+      color: req.body.color !== undefined ? String(req.body.color).trim() : accessory.color,
+      ratings: Array.isArray(req.body.ratings) ? req.body.ratings : accessory.ratings,
+      reviews: Array.isArray(req.body.reviews) ? req.body.reviews : accessory.reviews,
+      inStock: req.body.inStock !== undefined ? !!req.body.inStock : accessory.inStock,
+      stock: req.body.stock !== undefined ? Number(req.body.stock) : accessory.stock,
+      isOffer: req.body.isOffer !== undefined ? !!req.body.isOffer : accessory.isOffer,
+      isBestSeller: req.body.isBestSeller !== undefined ? !!req.body.isBestSeller : accessory.isBestSeller,
+      badge: req.body.badge !== undefined ? String(req.body.badge).trim() : accessory.badge,
+      description: req.body.description !== undefined ? String(req.body.description).trim() : accessory.description,
+      offerPrice: req.body.offerPrice !== undefined ? Number(req.body.offerPrice) : accessory.offerPrice,
+      discountPercent: req.body.discountPercent !== undefined ? Number(req.body.discountPercent) : accessory.discountPercent,
+      freeDelivery: req.body.freeDelivery !== undefined ? !!req.body.freeDelivery : accessory.freeDelivery,
+      deliveryPrice: req.body.freeDelivery || (req.body.freeDelivery !== undefined && req.body.freeDelivery) ? 0 : (req.body.deliveryPrice !== undefined ? Number(req.body.deliveryPrice) : accessory.deliveryPrice),
+      size: req.body.size !== undefined ? String(req.body.size).trim() : accessory.size,
+      tags: req.body.tags !== undefined ? String(req.body.tags).trim() : accessory.tags
+    };
+
+    const updated = await Accessory.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
+    
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Accessory not found after update', data: null });
+    }
+
     res.json({ success: true, message: 'Accessory updated successfully', data: updated });
   } catch (err) {
     console.error('Error updating accessory:', err);
